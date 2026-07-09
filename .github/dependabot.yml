@@ -1,23 +1,18 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - /
+      - /actions/setup-python
+      - /actions/setup-node
     schedule:
       interval: weekly
-    commit-message:
-      prefix: build
-      include: scope
-  - package-ecosystem: github-actions
-    directory: /actions/setup-python
-    schedule:
-      interval: weekly
-    commit-message:
-      prefix: build
-      include: scope
-  - package-ecosystem: github-actions
-    directory: /actions/setup-node
-    schedule:
-      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     commit-message:
       prefix: build
       include: scope
