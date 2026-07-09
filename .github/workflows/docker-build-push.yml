@@ -1,0 +1,61 @@
+name: Docker Build & Push
+
+on:
+  workflow_call:
+    inputs:
+      context:
+        description: Docker build context
+        required: false
+        type: string
+        default: .
+      image-name:
+        description: Image name without registry/owner (e.g. chores-web-backend)
+        required: true
+        type: string
+      push:
+        description: Push the image to GHCR (false = build only)
+        required: false
+        type: boolean
+        default: false
+      version:
+        description: Version tag to publish alongside latest (empty = latest only)
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Log in to GHCR
+        if: inputs.push
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
+      - name: Compute tags
+        id: tags
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          TAGS="$IMAGE:latest"
+          if [ -n "$VERSION" ]; then
+            TAGS="$TAGS,$IMAGE:$VERSION"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+      - name: Build${{ inputs.push && ' and push' || '' }} image
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: ${{ inputs.context }}
+          push: ${{ inputs.push }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
