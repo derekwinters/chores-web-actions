@@ -1,0 +1,25 @@
+Lightweight pre-grilling issue review for the chores-web-actions repository.
+
+> Recommended entry point: /grill-with-docs issue <N> — the full grilling session
+> that covers all 4 impact areas, posts a structured comment, and flips labels to
+> ready-for-work. This skill is only a fast sanity-check before that.
+
+When invoked with /github-issue-plan <issue-number>, follow this lightweight flow:
+
+1. Fetch issue: gh issue view <number>
+2. Check labels:
+   - Require `ready-to-grill`. If missing, warn the user (do not proceed to grilling).
+   - Skip if already `ready-for-work` (already grilled).
+3. Review content: title, description, acceptance criteria
+4. Summarize intent and flag ambiguities across the 4 impact areas:
+   - Actions (composite actions under actions/*)
+   - Workflows (reusable workflows under .github/workflows/*)
+   - Consumer Impact (SHA-pinned callers — changes reach consumers only on pin bump)
+   - Docs (README, CONTEXT.md, ADRs)
+5. Surface gaps: missing acceptance criteria, unclear scope boundaries, unstated affected areas
+6. Recommend running /grill-with-docs issue <N> to produce the implementation contract
+
+Rules:
+- Do NOT add labels or post comments — that is the grilling session's job
+- Do NOT initiate implementation under any circumstances
+- Consider all four impact areas explicitly; state when an area has no impact
