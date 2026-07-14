@@ -1,0 +1,59 @@
+Verify the repo's GitHub Actions YAML and show a changes summary for user review.
+
+Input: issue_number (optional)
+
+This repo (chores-web-actions) has no build/compile step and no test suite. The
+verify check is actionlint over the workflows plus a YAML-parse of the composite
+actions, with a documented-skip fallback. It must NEVER silently pass.
+
+Steps:
+1. Verify YAML:
+   a. If actionlint is available (command -v actionlint):
+      - actionlint .github/workflows/*.yml
+      - YAML-parse each actions/*/action.yml (actionlint does not lint composite action.yml):
+        python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" actions/<name>/action.yml
+   b. Else (fallback): YAML-parse every .github/workflows/*.yml AND actions/*/action.yml:
+        for f in .github/workflows/*.yml actions/*/action.yml; do
+          python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f"; done
+   c. Else (neither actionlint nor a YAML parser available): record an EXPLICIT
+      documented skip in the run log — do not report a pass.
+2. Record which verify path was taken (actionlint / YAML-parse fallback / documented
+   skip) and its result, for the PR's Deviations and Decisions section.
+3. Prepare changes summary:
+   - git diff --stat to get file changes
+   - Count modified files
+   - Summarize what was changed (which actions/workflows/docs)
+4. Show summary with:
+   - Issue number and title
+   - Verify path taken and result
+   - Files modified (with line counts)
+   - Summary of changes
+   - Test state: documented skip (no test suite in this repo)
+5. Pause and ask user:
+   - Approve for commit?
+   - Request more changes?
+   - Abort?
+
+Output format:
+┌─────────────────────────────────────────┐
+│ Issue #11: Port agent definitions        │
+│ Verification Complete                    │
+└─────────────────────────────────────────┘
+
+Verify: ✅ YAML-parse (actionlint unavailable) — 4/4 files OK
+        (.github/workflows/*.yml, actions/*/action.yml)
+
+Files Modified:
+- .claude/agents/...: +N, -0 lines
+- .claude/skills/...: +N, -0 lines
+
+Summary:
+<what changed>
+
+Tests: ⏭️ documented skip — no test suite in this repo
+Verify: ✅ actionlint / YAML-parse succeeded  (or ⏭️ documented skip if neither available)
+
+Ready to proceed?
+- [Approve for commit]
+- [Request changes]
+- [Abort]

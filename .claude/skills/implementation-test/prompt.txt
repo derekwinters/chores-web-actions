@@ -1,0 +1,21 @@
+Test state for implemented changes.
+
+No input required. Runs in current git branch.
+
+This repo (chores-web-actions) has NO test suite and no application code — it is a
+shared-CI repo of composite actions and reusable workflows. There is nothing to run.
+
+Steps:
+1. Confirm there is no test target in this repo (no `test` / `npm test` / gradle / pytest).
+2. Record an explicit skip in the run log — never silently omit it.
+3. Point to the verify step (implementation-verify: actionlint / YAML-parse) as the
+   place where change soundness is actually checked.
+
+Output format - Documented skip:
+⏭️ Test state skipped (documented)
+- Reason: no test suite in this repo
+- Recorded: "test: no test suite in this repo — skip"
+- Status: Ready for build-verify phase
+
+Never emit a "tests passed" result — there are no tests. The skip is mandatory and
+must appear in the run log.

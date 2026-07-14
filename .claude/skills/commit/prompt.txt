@@ -1,0 +1,47 @@
+When invoked with /commit, follow this flow:
+
+## Step 1: Verify (no test suite in this repo)
+- This repo has NO test suite. Do not attempt to run tests.
+- If any workflow/action YAML changed, verify it:
+  - If actionlint is available: actionlint .github/workflows/*.yml
+    and YAML-parse each changed actions/*/action.yml
+  - Else: YAML-parse each changed .github/workflows/*.yml and actions/*/action.yml:
+    python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" <file>
+  - If neither is possible: record an explicit skip (never a silent pass)
+- If verification fails, stop and report the malformed file. Do NOT proceed.
+
+## Step 2: Review Changes
+- Run: git diff --staged (to see staged changes)
+- Run: git status (to see working tree)
+- Understand what changed and why
+
+## Step 3: Determine Type and Scope
+From the actual changes, derive:
+- Type: feat | fix | refactor | test | docs | chore | ci | perf | build
+- Scope: actions | workflows | agents | skills | docs | ci (pick most relevant)
+
+Examples:
+- Adding a composite action → feat(actions)
+- Fixing a reusable workflow bug → fix(workflows)
+- Restructuring an agent definition → refactor(agents)
+- Updating README → docs
+- Bumping a pinned third-party action → chore(workflows) or chore(actions)
+
+## Step 4: Write Commit
+- Subject: <type>(<scope>): description
+- Rules:
+  - ≤72 characters
+  - lowercase
+  - no period at end
+  - imperative mood ("add" not "added")
+- Body: only if "why" is non-obvious
+- Include Co-Authored-By footer
+
+## Step 5: Execute
+- Create and execute the commit
+- Verify with git log
+
+## Important
+- No test suite exists — verification is actionlint / YAML-parse, or a documented skip
+- MUST use imperative mood
+- MUST match Conventional Commits format
