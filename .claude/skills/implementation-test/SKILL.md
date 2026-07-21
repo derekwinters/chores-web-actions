@@ -1,11 +1,12 @@
 ---
 name: implementation-test
-description: Test state for implemented changes — this repo has no test suite, so this is an explicit documented skip.
+description: Run the repo's test suite for implemented changes and report pass/fail.
 ---
 
 # Implementation Test Skill
 
-This repo (`chores-web-actions`) is a shared-CI repo — composite actions and reusable workflows only, with **no test suite and no application code**. There is nothing to run here.
+Runs the test suite to verify implemented changes. Called by the implementation
+orchestrator after implementation; can also be run independently.
 
 ## Usage
 
@@ -15,19 +16,16 @@ This repo (`chores-web-actions`) is a shared-CI repo — composite actions and r
 
 ## Workflow
 
-1. **Confirm no test suite exists**: this repo has never had a test framework — there is no `test`, `npm test`, or equivalent target.
-2. **Record an explicit skip**: emit `test: no test suite in this repo — skip` into the run log.
-3. **Never silently omit**: the skip is always reported, never dropped. The verification that the change is sound happens in the `implementation-verify` step (actionlint / YAML-parse), not here.
+1. **Run tests:** `actionlint .github/workflows/*.yml`
+2. **Capture output:** test count, passed/failed, any failures.
+3. **Check exit code:** 0 = success, non-zero = failure.
+4. **Report:**
+   - PASS → "All tests passed. Ready for verification."
+   - FAIL → list the failed tests + error messages. Blocks the workflow until fixed.
 
-## Output
-
-- ⏭️ Test state skipped (documented)
-  - Reason: no test suite in this repo
-  - Recorded in run log: `test: no test suite in this repo — skip`
-  - Next: proceed to build-verify (`/implementation-verify`)
+No test suite in this repo — `actionlint` (with a YAML-parse fallback) is the gate. Never emit a 'tests passed' result; record an explicit skip if lint can't run.
 
 ## Notes
 
-- Called by orchestrator after the implement-then-verify loop
-- This state is a **documented skip**, not a silent no-op — it is always recorded
-- Actual soundness checking of changes is done by `implementation-verify`
+- Tests must all pass before proceeding.
+- Never claim a suite passed that did not actually run — report the real result.

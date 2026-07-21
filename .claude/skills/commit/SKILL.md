@@ -1,11 +1,12 @@
 ---
 name: commit
-description: Verify repo YAML (actionlint / YAML-parse) and create a conventional commit with proper type and scope
+description: Run the repo's tests, then create a Conventional Commit with proper type and scope.
 ---
 
 # Commit Skill
 
-Verifies the repo's YAML is well-formed (this repo has no test suite), then creates a Conventional Commit with proper type/scope.
+Validates the suite passes, then creates a Conventional Commit with the right
+type/scope. Stage changes before invoking.
 
 ## Usage
 
@@ -15,18 +16,13 @@ Verifies the repo's YAML is well-formed (this repo has no test suite), then crea
 
 ## Flow
 
-1. Verify YAML if any workflow/action YAML changed:
-   - If `actionlint` is available: `actionlint .github/workflows/*.yml` and YAML-parse `actions/*/action.yml`
-   - Else: YAML-parse each changed `.github/workflows/*.yml` and `actions/*/action.yml`
-     (`python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))"`)
-   - If neither is possible: record an explicit skip — never a silent pass
-   - There is no test suite to run in this repo
-2. Stop if verification fails — report the malformed file
-3. Review staged/unstaged changes
-4. Derive commit type and scope from changes
-5. Create commit using Conventional Commits format
+1. Run the test suite: `actionlint .github/workflows/*.yml`
+2. Stop if anything fails — report failures; do NOT commit.
+3. Review staged/unstaged changes (`git diff --staged`, `git status`).
+4. Derive commit type and scope from the actual changes.
+5. Create the commit in Conventional Commits format.
 
-## Commit Format
+## Format
 
 ```
 <type>(<scope>): <short description>
@@ -36,29 +32,18 @@ Verifies the repo's YAML is well-formed (this repo has no test suite), then crea
 
 ## Types
 
-- `feat` - new action/workflow or new capability
-- `fix` - bug fix
-- `refactor` - restructuring without behavior change
-- `test` - test additions/changes (n/a in this repo — no test suite)
-- `docs` - documentation
-- `chore` - build/deps/tooling/process
-- `ci` - CI/CD changes
-- `perf` - performance
-- `build` - build system
+`feat` (feature) · `fix` (bug) · `refactor` · `test` · `docs` · `chore`
+(build/deps/tooling) · `style` · `perf` · `ci`. Pick by the actual semver impact
+of the change, not by what a PR title happens to say.
 
 ## Scopes
 
-- `actions` - composite actions under `actions/*`
-- `workflows` - reusable workflows under `.github/workflows/*`
-- `agents` - `.claude/agents/*`
-- `skills` - `.claude/skills/*`
-- `docs` - README and other documentation
-- `ci` - CI configuration
-- Use most relevant scope
+Use the most relevant of: `actions, workflows, agents, skills, docs, ci`.
+
+
 
 ## Rules
 
-- Subject line ≤72 characters, lowercase, no period
-- Imperative mood: "add" not "added"
-- Body only when "why" is non-obvious
-- Stage changes before invoking
+- Subject ≤72 chars, lowercase, no trailing period, imperative mood ("add" not "added").
+- Body only when the "why" is non-obvious.
+- This skill never invents a branch or pushes — it only commits.
